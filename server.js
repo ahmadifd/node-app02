@@ -1,10 +1,10 @@
-import express from "express";
+const express = require("express");
+const mongoose = require("mongoose");
 //import mongoose from "mongoose";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 // await mongoose
 //   .connect(
