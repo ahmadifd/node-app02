@@ -1,10 +1,10 @@
-const express = require("express");
-const mongoose = require("mongoose");
+import express from "express";
 //import mongoose from "mongoose";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 
 // await mongoose
 //   .connect(
@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.get("/api/users", (req, res) => {
   console.log("Hello Farshid");
-  res.send("Hello Farshid Ahmadi");
+  res.send("Hello Farshid Ahmadi 1");
 });
 
 const PORT = process.env.PORT || 3000;

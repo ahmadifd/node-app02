@@ -8,7 +8,7 @@
   },
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "express": "^4.18.2",
     "mongodb": "^6.2.0",
