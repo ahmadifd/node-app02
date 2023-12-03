@@ -6,9 +6,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-await mongoose
+await mongoose  
   .connect(
-    //"mongodb://root:XMBjo2J0QUCl9dRu@services.irn1.chabokan.net:2039/CompanyDB"
+    //"mongodb://root:XMBjo2J0QUCl9dRu@services.irn1.chabokan.net:2039/CompanyDB"eee
     "mongodb+srv://ahmadifd:47mcOiksjZjyvH1Y@cluster0.jad41dh.mongodb.net/CompanyDB"
   )
   .then(async () => {
