@@ -2,12 +2,16 @@ import express from "express";
 import mongoose from "mongoose";
 import { connectDB } from "./config/dbConn.js";
 import authRoutes from "./routes/authRoutes.js";
+import cors from "cors";
+import {corsOptions} from "./config/corsOptions.js";
 
 const PORT = process.env.PORT || 3500;
 
 const app = express();
 
 connectDB();
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
