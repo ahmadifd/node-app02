@@ -1,16 +1,22 @@
 import express from "express";
 import mongoose from "mongoose";
 import { connectDB } from "./config/dbConn.js";
+import authRoutes from "./routes/authRoutes.js";
+
+const PORT = process.env.PORT || 3500;
+
+const app = express();
 
 connectDB();
 
+app.use(express.json());
 
-mongoose.connection.once('open', () => {
-  console.log('Connected to MongoDB')
+app.use("/auth", authRoutes);
 
-})
-
-
+mongoose.connection.once("open", () => {
+  console.log("Connected to MongoDB");
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+});
 
 // const app = express();
 // app.use(express.json());
