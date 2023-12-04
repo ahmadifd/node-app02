@@ -1,7 +1,8 @@
 import express from "express";
 import loginLimiter from "../middleware/loginLimiter.js";
 import validator from "./auth/validator.js";
-import controller from "../controllers/authController.js";
+import authController from "../controllers/authController.js";
+import controller from "../routes/controller.js";
 
 const router = express.Router();
 
@@ -10,8 +11,8 @@ router
   .post(
     loginLimiter,
     validator.loginValidator(),
-    controller.validate.bind(controller),
-    controller.login
+    controller.validate,
+    authController.login
   );
 
 export default router;
