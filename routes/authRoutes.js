@@ -7,7 +7,15 @@ import controller from "../routes/controller.js";
 const router = express.Router();
 
 router
-  .route("/")
+  .route("/register")
+  .post(
+    validator.registerValidator(),
+    controller.validate,
+    authController.register
+  );
+
+router
+  .route("/login")
   .post(
     loginLimiter,
     validator.loginValidator(),

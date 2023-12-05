@@ -23,8 +23,8 @@ const validate = (req, res, next) => {
   next();
 };
 
-const response = ({ res, message, code = 200, data = {} }) => {
-  res.status(code).json({
+const response = ({ res, message, status = 200, data = {} }) => {
+  res.status(status).json({
     message,
     data,
   });
