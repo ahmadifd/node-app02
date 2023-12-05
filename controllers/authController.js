@@ -43,13 +43,13 @@ const login = async (req, res) => {
     maxAge: 1 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
   });
 
-  setTimeout(() => {
+  //setTimeout(() => {
     return controller.response({
       res,
       status: 200,
       data: { accessToken },
     });
-  }, 1000);
+  //}, 1000);
 };
 
 const register = async (req, res) => {
