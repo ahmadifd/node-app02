@@ -6,6 +6,7 @@ import cors from "cors";
 import { corsOptions } from "./config/corsOptions.js";
 import cookieParser from "cookie-parser";
 import { credentials } from "./middleware/credentials.js";
+import userRoutes from "./routes/userRoutes.js";
 
 const PORT = process.env.PORT || 3500;
 
@@ -24,6 +25,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/auth", authRoutes);
+
+app.use("/users", userRoutes);
 
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
