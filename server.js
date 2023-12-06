@@ -3,7 +3,9 @@ import mongoose from "mongoose";
 import { connectDB } from "./config/dbConn.js";
 import authRoutes from "./routes/authRoutes.js";
 import cors from "cors";
-import {corsOptions} from "./config/corsOptions.js";
+import { corsOptions } from "./config/corsOptions.js";
+import cookieParser from "cookie-parser";
+import { credentials } from "./middleware/credentials.js";
 
 const PORT = process.env.PORT || 3500;
 
@@ -11,9 +13,15 @@ const app = express();
 
 connectDB();
 
+app.use(credentials);
+
 app.use(cors(corsOptions));
 
+//app.use(express.urlencoded({ extended: false }));
+
 app.use(express.json());
+
+app.use(cookieParser());
 
 app.use("/auth", authRoutes);
 

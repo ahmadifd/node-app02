@@ -24,7 +24,7 @@ const login = async (req, res) => {
       },
     },
     "sdfjhj234t2fwd0982i34rf23feoijf042SDF",
-    { expiresIn: "15m" }
+    { expiresIn: "5s" }
   );
 
   const refreshToken = jwt.sign(
@@ -37,18 +37,18 @@ const login = async (req, res) => {
   console.log(refreshToken);
 
   res.cookie("jwt", refreshToken, {
-    httpOnly: true, //accessible only by web server
-    secure: true, //https
-    sameSite: "None", //cross-site cookie
+    httpOnly: false, //accessible only by web server
+    secure: false, //https
+    //sameSite: "None", //cross-site cookie
     maxAge: 1 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
   });
 
   //setTimeout(() => {
-    return controller.response({
-      res,
-      status: 200,
-      data: { accessToken },
-    });
+  return controller.response({
+    res,
+    status: 200,
+    data: { accessToken },
+  });
   //}, 1000);
 };
 
@@ -86,6 +86,75 @@ const register = async (req, res) => {
   }
 };
 
-const refresh = (req, res) => {};
+const refresh = (req, res) => {
+  const cookies = req.cookies;
 
-export default { login, refresh, register };
+  if (!cookies?.jwt)
+    return controller.response({ res, status: 401, message: "Unauthorized" });
+
+  const refreshToken = cookies.jwt;
+
+  jwt.verify(
+    refreshToken,
+    "sdfjhj432t2fwd0982i43rf23feoijf024SDF",
+    async (err, decode) => {
+      if (err)
+        return controller.response({ res, status: 403, message: "Forbidden" });
+
+      const foundUser = await User.findOne({ refreshToken }).exec();
+
+      if (!foundUser || foundUser.username !== decode.username)
+        return controller.response({
+          res,
+          status: 403,
+          message: "Forbidden",
+        });
+
+      const accessToken = jwt.sign(
+        {
+          UserInfo: {
+            username: foundUser.username,
+            roles: foundUser.roles,
+          },
+        },
+        "sdfjhj234t2fwd0982i34rf23feoijf042SDF",
+        { expiresIn: "5s" }
+      );
+
+      return controller.response({
+        res,
+        status: 200,
+        data: { accessToken },
+      });
+    }
+  );
+};
+
+const logout = async (req, res) => {
+  const cookies = req.cookies;
+  if (!cookies?.jwt) return controller.response({ res, status: 204 });
+  const refreshToken = cookies.jwt;
+  const foundUser = await User.findOne({ refreshToken }).exec();
+  if (!foundUser) {
+    res.clearCookie("jwt", {
+      httpOnly: false,
+      //sameSite: 'None',
+      secure: false,
+    });
+    return controller.response({ res, status: 204 });
+  }
+
+  foundUser.refreshToken = "";
+  const result = await foundUser.save();
+  console.log(result);
+
+  res.clearCookie("jwt", {
+    httpOnly: false,
+    //sameSite: 'None',
+    secure: false,
+  });
+
+  controller.response({ res, message: "Cookie cleared" });
+};
+
+export default { login, refresh, register, logout };
