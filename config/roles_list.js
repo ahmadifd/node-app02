@@ -1,7 +1,7 @@
 const ROLES_LIST = {
-  Admin: 5150,
-  Editor: 1984,
-  User: 2001,
+  Admin: "Admin",
+  Manager: "Manager",
+  User: "User",
 };
 
 export default ROLES_LIST;

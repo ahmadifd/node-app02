@@ -9,8 +9,8 @@ export const verifyJWT = (req, res, next) => {
 
   const token = authHeader.split(" ")[1];
 
-  jwt.verify(token, 'sdfjhj234t2fwd0982i34rf23feoijf042SDF', (err, decoded) => {
-    if (err) return controller.response({res,status:403})
+  jwt.verify(token, "sdfjhj234t2fwd0982i34rf23feoijf042SDF", (err, decoded) => {
+    if (err) return controller.response({ res, status: 403 });
     req.user = decoded.UserInfo.username;
     req.roles = decoded.UserInfo.roles;
     next();

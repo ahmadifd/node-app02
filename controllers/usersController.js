@@ -8,7 +8,7 @@ const getAllUsers = async (req, res) => {
     return controller.response({ res, status: 400, message: "No users found" });
   }
 
-  controller.response({ data: users });
+  controller.response({res, data: users });
 };
 
 export default { getAllUsers };

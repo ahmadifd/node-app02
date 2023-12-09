@@ -10,6 +10,8 @@ router.use(verifyJWT);
 
 router
   .route("/")
-  .get(verifyRoles(ROLES_LIST.Admin), usersController.getAllUsers);
+  .get(
+    verifyRoles(ROLES_LIST.Admin),
+     usersController.getAllUsers);
 
 export default router;
