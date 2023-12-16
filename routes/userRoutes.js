@@ -10,8 +10,8 @@ router.use(verifyJWT);
 
 router
   .route("/")
-  .get(
+  .post(
     verifyRoles(ROLES_LIST.Admin),
-     usersController.getAllUsers);
+     usersController.getDataGridUsers);
 
 export default router;
