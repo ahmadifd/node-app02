@@ -2,6 +2,74 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import controller from "../routes/controller.js";
 
+const query = (filter, fromindex, pagesize) => {
+  switch (filter.filterType) {
+    case "contains":
+      return User.find({
+        [filter.key]: { $regex: filter.value },
+      })
+        .skip(fromindex)
+        .limit(pagesize)
+        .select("-password")
+        .lean();
+      break;
+    case "equals":
+      return User.find({
+        [filter.key]: filter.value,
+      })
+        .skip(fromindex)
+        .limit(pagesize)
+        .select("-password")
+        .lean();
+      break;
+    case "startsWith":
+      return User.find({
+        [filter.key]: { $regex: `^${filter.value}` },
+      })
+        .skip(fromindex)
+        .limit(pagesize)
+        .select("-password")
+        .lean();
+      break;
+    case "endsWith":
+      return User.find({
+        [filter.key]: { $regex: `${filter.value}$` },
+      })
+        .skip(fromindex)
+        .limit(pagesize)
+        .select("-password")
+        .lean();
+      break;
+    case "isEmpty":
+      return User.find({
+        [filter.key]: "",
+      })
+        .skip(fromindex)
+        .limit(pagesize)
+        .select("-password")
+        .lean();
+      break;
+    case "isNotEmpty":
+      return User.find({
+        [filter.key]: { $exists: true, $ne: "" },
+      })
+        .skip(fromindex)
+        .limit(pagesize)
+        .select("-password")
+        .lean();
+      break;
+    case "isAnyOf":
+      return User.find({
+        [filter.key]: filter.value,
+      })
+        .skip(fromindex)
+        .limit(pagesize)
+        .select("-password")
+        .lean();
+      break;
+  }
+};
+
 const getDataGridUsers = async (req, res) => {
   console.log(req?.body);
 
@@ -23,57 +91,17 @@ const getDataGridUsers = async (req, res) => {
   let totalCount;
   let fromindex;
 
-  if (filter !== undefined || sort !== undefined || quicksearch !== undefined)
-    console.log("Hello");
-  if (filter) {
-    switch (filter.filterType) {
-      case "contains":
-        totalCount = await User.count({
-          [filter.key]: { $regex: filter.value },
-        });
-
-        users = await User.find({
-          [filter.key]: { $regex: filter.value },
-        })
-          .select("-password")
-          .lean();
-
-        fromindex = pagenumber * pagesize;
-        if (totalCount >= fromindex + pagesize) {
-          users = await User.find({
-            [filter.key]: { $regex: filter.value },
-          })
-            .skip(fromindex)
-            .limit(pagesize)
-            .select("-password")
-            .lean();
-
-          nextCursor = await User.find({
-            [filter.key]: { $regex: filter.value },
-          })
-            .skip(fromindex + pagesize)
-            .limit(1);
-        } else {
-          users = await User.find({
-            [filter.key]: { $regex: filter.value },
-          })
-            .skip(fromindex)
-            .limit(totalCount - fromindex);
-        }
-
-        break;
-      case "equals":
-        break;
-      case "startsWith":
-        break;
-      case "endsWith":
-        break;
-      case "isEmpty":
-        break;
-      case "isNotEmpty":
-        break;
-      case "isAnyOf":
-        break;
+  if (filter !== undefined || sort !== undefined || quicksearch !== undefined) {
+    if (filter) {
+      totalCount = await query(filter).count();
+      users = await query(filter).select("-password").lean();
+      fromindex = pagenumber * pagesize;
+      if (totalCount >= fromindex + pagesize) {
+        users = await query(filter, fromindex, pagesize);
+        nextCursor = await query(filter, fromindex + pagesize, 1);
+      } else {
+        users = await query(filter, fromindex, totalCount - fromindex);
+      }
     }
   } else {
     totalCount = await User.count();
