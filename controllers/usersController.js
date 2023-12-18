@@ -2,72 +2,83 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import controller from "../routes/controller.js";
 
-const query = (filter, fromindex, pagesize) => {
+const queryFilter = (qFilter, filter) => {
+  if (["active"].includes(filter.key)) {
+    switch (filter.filterType) {
+      case "contains":
+        return qFilter.find({
+          [filter.key]: "false".startsWith(filter.value) ? 0 : 1,
+        });
+      case "equals":
+        
+      case "startsWith":
+      case "endsWith":
+      case "isEmpty":
+      case "isNotEmpty":
+      case "isAnyOf":
+    }
+  }
   switch (filter.filterType) {
     case "contains":
-      return User.find({
+      return qFilter.find({
         [filter.key]: { $regex: filter.value },
-      })
-        .skip(fromindex)
-        .limit(pagesize)
-        .select("-password")
-        .lean();
+      });
+
       break;
     case "equals":
-      return User.find({
+      return qFilter.find({
         [filter.key]: filter.value,
-      })
-        .skip(fromindex)
-        .limit(pagesize)
-        .select("-password")
-        .lean();
+      });
       break;
     case "startsWith":
-      return User.find({
+      return qFilter.find({
         [filter.key]: { $regex: `^${filter.value}` },
-      })
-        .skip(fromindex)
-        .limit(pagesize)
-        .select("-password")
-        .lean();
+      });
       break;
     case "endsWith":
-      return User.find({
+      return qFilter.find({
         [filter.key]: { $regex: `${filter.value}$` },
-      })
-        .skip(fromindex)
-        .limit(pagesize)
-        .select("-password")
-        .lean();
+      });
       break;
     case "isEmpty":
-      return User.find({
+      return qFilter.find({
         [filter.key]: "",
-      })
-        .skip(fromindex)
-        .limit(pagesize)
-        .select("-password")
-        .lean();
+      });
       break;
     case "isNotEmpty":
-      return User.find({
+      return qFilter.find({
         [filter.key]: { $exists: true, $ne: "" },
-      })
-        .skip(fromindex)
-        .limit(pagesize)
-        .select("-password")
-        .lean();
+      });
       break;
     case "isAnyOf":
-      return User.find({
+      return qFilter.find({
         [filter.key]: filter.value,
-      })
-        .skip(fromindex)
-        .limit(pagesize)
-        .select("-password")
-        .lean();
+      });
       break;
   }
+};
+
+const queryQuickSearch = (qFilter, quicksearch) => {
+  return qFilter.find({
+    $or: [
+      {
+        firstname: { $regex: quicksearch },
+      },
+      {
+        lastname: { $regex: quicksearch },
+      },
+      {
+        username: { $regex: quicksearch },
+      },
+      {
+        email: { $regex: quicksearch },
+      },
+    ],
+  });
+};
+
+const query = (qFilter, fromindex, pagesize) => {
+  return qFilter.skip(fromindex).limit(pagesize).select("-password").lean();
 };
 
 const getDataGridUsers = async (req, res) => {
@@ -87,38 +98,81 @@ const getDataGridUsers = async (req, res) => {
 
   ////////////////////////////////////////////////////////////////////////
   let users;
+  let usersTemp;
+  let usersCountTemp;
   let nextCursor;
   let totalCount;
   let fromindex;
 
   if (filter !== undefined || sort !== undefined || quicksearch !== undefined) {
+    usersTemp = User.find();
+    usersCountTemp = User.find();
     if (filter) {
-      totalCount = await query(filter).count();
-      users = await query(filter).select("-password").lean();
-      fromindex = pagenumber * pagesize;
-      if (totalCount >= fromindex + pagesize) {
-        users = await query(filter, fromindex, pagesize);
-        nextCursor = await query(filter, fromindex + pagesize, 1);
-      } else {
-        users = await query(filter, fromindex, totalCount - fromindex);
+      usersTemp = queryFilter(usersTemp, filter);
+      usersCountTemp = queryFilter(usersCountTemp, filter);
+    }
+    if (quicksearch) {
+      usersTemp = queryQuickSearch(usersTemp, quicksearch);
+      usersCountTemp = queryQuickSearch(usersCountTemp, quicksearch);
+    }
+    if (sort) {
+      //number
+      if (sort.key === "id") {
+        if (sort.value == "asc") {
+          // filterUsersData = filterUsersData.sort((x, y) => x.id - y.id);
+        } else if (sort.value == "desc") {
+          //filterUsersData = filterUsersData.sort((x, y) => y.id - x.id);
+        }
       }
+      //boolean
+      else if (sort.key === "active") {
+        if (sort.value == "asc") {
+          usersTemp = usersTemp.sort({ [sort.key]: 1 });
+          usersCountTemp = usersCountTemp.sort({ [sort.key]: 1 });
+        } else if (sort.value == "desc") {
+          usersTemp = usersTemp.sort({ [sort.key]: -1 });
+          usersCountTemp = usersCountTemp.sort({ [sort.key]: -1 });
+        }
+      }
+      //string
+      else if (
+        ["firstname", "lastname", "username", "email"].includes(sort.key)
+      ) {
+        if (sort.value == "asc") {
+          {
+            usersTemp = usersTemp.sort({ [sort.key]: 1 });
+            usersCountTemp = usersCountTemp.sort({ [sort.key]: 1 });
+          }
+        } else if (sort.value == "desc") {
+          {
+            usersTemp = usersTemp.sort({ [sort.key]: -1 });
+            usersCountTemp = usersCountTemp.sort({ [sort.key]: -1 });
+          }
+        }
+      }
+    }
+
+    totalCount = await usersCountTemp.count();
+    fromindex = pagenumber * pagesize;
+    if (totalCount >= fromindex + pagesize) {
+      const result = await query(usersTemp, fromindex, pagesize + 1);
+      users = result.slice(0, pagesize);
+      nextCursor = result.slice(pagesize);
+    } else {
+      users = await query(usersTemp, fromindex, totalCount - fromindex);
     }
   } else {
     totalCount = await User.count();
-
     users = await User.find().select("-password").lean();
-
     fromindex = pagenumber * pagesize;
     if (totalCount >= fromindex + pagesize) {
-      users = await User.find()
+      const result = await User.find()
         .skip(fromindex)
-        .limit(pagesize)
+        .limit(pagesize + 1)
         .select("-password")
         .lean();
-
-      nextCursor = await User.find()
-        .skip(fromindex + pagesize)
-        .limit(1);
+      users = result.slice(0, pagesize);
+      nextCursor = result.slice(pagesize);
     } else {
       users = await User.find()
         .skip(fromindex)
@@ -126,71 +180,13 @@ const getDataGridUsers = async (req, res) => {
     }
   }
 
-  console.log(totalCount, fromindex);
-
-  return controller.response({ res, data: { users, totalCount, nextCursor } });
-
   ////////////////////////////////////////////////////////////////////////
 
-  //const users = await User.find().select("-password").lean();
+  // if (!users?.length) {
+  //   return controller.response({ res, status: 400, message: "No users found" });
+  // }
 
-  if (sort) {
-    //number
-    if (sort.key === "id") {
-      if (sort.value == "asc") {
-        // filterUsersData = filterUsersData.sort((x, y) => x.id - y.id);
-      } else if (sort.value == "desc") {
-        //filterUsersData = filterUsersData.sort((x, y) => y.id - x.id);
-      }
-    }
-    //boolean
-    else if (sort.key === "active") {
-      if (sort.value == "asc") {
-        // filterUsersData = filterUsersData.sort(
-        //   (x, y) => (x.active ? 1 : 0) - (y.active ? 1 : 0)
-        // );
-      } else if (sort.value == "desc") {
-        // filterUsersData = filterUsersData.sort(
-        //   (x, y) => (y.active ? 1 : 0) - (x.active ? 1 : 0)
-        // );
-      }
-    }
-    //string
-    else if (
-      ["firstname", "lastname", "username", "email"].includes(sort.key)
-    ) {
-      if (sort.value == "asc") {
-        {
-          // filterUsersData = filterUsersData.sort((x, y) =>
-          //   x[sort.key].toString().localeCompare(y[sort.key].toString())
-          // );
-        }
-      } else if (sort.value == "desc") {
-        {
-          // filterUsersData = filterUsersData.sort((x, y) =>
-          //   y[sort.key].toString().localeCompare(x[sort.key].toString())
-          // );
-        }
-      }
-    }
-  }
-
-  //quicksearch
-  if (quicksearch) {
-    // filterUsersData = filterUsersData.filter(
-    //   (x) =>
-    //     x.firstname.includes(quicksearch) ||
-    //     x.lastname.includes(quicksearch) ||
-    //     x.username.includes(quicksearch) ||
-    //     x.email.includes(quicksearch)
-    // );
-  }
-
-  if (!users?.length) {
-    return controller.response({ res, status: 400, message: "No users found" });
-  }
-
-  controller.response({ res, data: { users, totalCount } });
+  controller.response({ res, data: { users, totalCount, nextCursor } });
 };
 
 export default { getDataGridUsers };
