@@ -12,7 +12,10 @@ const login = async (req, res) => {
     return controller.response({ res, message: "Unauthorized", status: 401 });
   }
 
+
+
   const match = await bcrypt.compare(password, foundUser.password);
+    console.log(match);
   if (!match)
     return controller.response({ res, message: "Unauthorized", status: 401 });
 

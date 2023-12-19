@@ -127,48 +127,24 @@ const getDataGridUsers = async (req, res) => {
   if (filter !== undefined || sort !== undefined || quicksearch !== undefined) {
     usersTemp = User.find();
     usersCountTemp = User.find();
+
     if (filter) {
       usersTemp = queryFilter(usersTemp, filter);
       usersCountTemp = queryFilter(usersCountTemp, filter);
     }
+
     if (quicksearch) {
       usersTemp = queryQuickSearch(usersTemp, quicksearch);
       usersCountTemp = queryQuickSearch(usersCountTemp, quicksearch);
     }
+    
     if (sort) {
-      //number
-      if (sort.key === "id") {
-        if (sort.value == "asc") {
-          // filterUsersData = filterUsersData.sort((x, y) => x.id - y.id);
-        } else if (sort.value == "desc") {
-          //filterUsersData = filterUsersData.sort((x, y) => y.id - x.id);
-        }
-      }
-      //boolean
-      else if (["active"].includes(sort.key)) {
-        if (sort.value == "asc") {
-          usersTemp = usersTemp.sort({ [sort.key]: 1 });
-          usersCountTemp = usersCountTemp.sort({ [sort.key]: 1 });
-        } else if (sort.value == "desc") {
-          usersTemp = usersTemp.sort({ [sort.key]: -1 });
-          usersCountTemp = usersCountTemp.sort({ [sort.key]: -1 });
-        }
-      }
-      //string
-      else if (
-        ["firstname", "lastname", "username", "email"].includes(sort.key)
-      ) {
-        if (sort.value == "asc") {
-          {
-            usersTemp = usersTemp.sort({ [sort.key]: 1 });
-            usersCountTemp = usersCountTemp.sort({ [sort.key]: 1 });
-          }
-        } else if (sort.value == "desc") {
-          {
-            usersTemp = usersTemp.sort({ [sort.key]: -1 });
-            usersCountTemp = usersCountTemp.sort({ [sort.key]: -1 });
-          }
-        }
+      if (sort.value == "asc") {
+        usersTemp = usersTemp.sort({ [sort.key]: 1 });
+        usersCountTemp = usersCountTemp.sort({ [sort.key]: 1 });
+      } else if (sort.value == "desc") {
+        usersTemp = usersTemp.sort({ [sort.key]: -1 });
+        usersCountTemp = usersCountTemp.sort({ [sort.key]: -1 });
       }
     }
 
