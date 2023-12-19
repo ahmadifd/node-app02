@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import timestamp from "mongoose-timestamp";
 
 const userShema = new mongoose.Schema({
+  rownumber: {
+    type: Number,
+    require: true,
+  },
   firstname: {
     type: String,
     require: true,

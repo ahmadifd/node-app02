@@ -3,21 +3,6 @@ import jwt from "jsonwebtoken";
 import controller from "../routes/controller.js";
 
 const queryFilter = (qFilter, filter) => {
-  if (["active"].includes(filter.key)) {
-    switch (filter.filterType) {
-      case "contains":
-        return qFilter.find({
-          [filter.key]: "false".startsWith(filter.value) ? 0 : 1,
-        });
-      case "equals":
-        
-      case "startsWith":
-      case "endsWith":
-      case "isEmpty":
-      case "isNotEmpty":
-      case "isAnyOf":
-    }
-  }
   switch (filter.filterType) {
     case "contains":
       return qFilter.find({
@@ -53,6 +38,41 @@ const queryFilter = (qFilter, filter) => {
     case "isAnyOf":
       return qFilter.find({
         [filter.key]: filter.value,
+      });
+      break;
+    case "is":
+      return qFilter.find({
+        [filter.key]: filter.value,
+      });
+      break;
+    case "=":
+      return qFilter.find({
+        [filter.key]: filter.value,
+      });
+      break;
+    case "!=":
+      return qFilter.find({
+        [filter.key]: { $ne: filter.value },
+      });
+      break;
+    case ">":
+      return qFilter.find({
+        [filter.key]: { $gt: filter.value },
+      });
+      break;
+    case ">=":
+      return qFilter.find({
+        [filter.key]: { $gte: filter.value },
+      });
+      break;
+    case "<":
+      return qFilter.find({
+        [filter.key]: { $lt: filter.value },
+      });
+      break;
+    case "<=":
+      return qFilter.find({
+        [filter.key]: { $lte: filter.value },
       });
       break;
   }
@@ -125,7 +145,7 @@ const getDataGridUsers = async (req, res) => {
         }
       }
       //boolean
-      else if (sort.key === "active") {
+      else if (["active"].includes(sort.key)) {
         if (sort.value == "asc") {
           usersTemp = usersTemp.sort({ [sort.key]: 1 });
           usersCountTemp = usersCountTemp.sort({ [sort.key]: 1 });

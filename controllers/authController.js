@@ -62,10 +62,19 @@ const register = async (req, res) => {
     });
   }
   const hashedPwd = await bcrypt.hash(password, 10);
+  const rownumber = (await User.count()) + 1;
   const userObject =
     !Array.isArray(roles) || !roles.length
-      ? { firstname, lastname, email, username, password: hashedPwd }
-      : { firstname, lastname, email, username, password: hashedPwd, roles };
+      ? { firstname, lastname, email, username, password: hashedPwd, rownumber }
+      : {
+          firstname,
+          lastname,
+          email,
+          username,
+          password: hashedPwd,
+          roles,
+          rownumber,
+        };
 
   const user = await User.create(userObject);
 
