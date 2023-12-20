@@ -101,7 +101,7 @@ const refresh = (req, res) => {
   const cookies = req.cookies;
 
   if (!cookies?.jwt)
-    return controller.response({ res, status: 401, message: "Unauthorized" });
+    return controller.response({ res, status: 401, message: "Unauthorized - jwt cookies does'nt exist" });
 
   const refreshToken = cookies.jwt;
 
