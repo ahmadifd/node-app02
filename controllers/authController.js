@@ -27,7 +27,7 @@ const login = async (req, res) => {
       },
     },
     "sdfjhj234t2fwd0982i34rf23feoijf042SDF",
-    { expiresIn: "10s" }
+    { expiresIn: "5s" }
   );
 
   const refreshToken = jwt.sign(
@@ -39,9 +39,9 @@ const login = async (req, res) => {
   const result = await foundUser.save();
 
   res.cookie("jwt", refreshToken, {
-    httpOnly: false, //accessible only by web server
-    secure: false, //https
-    //sameSite: "None", //cross-site cookie
+    httpOnly: true, //accessible only by web server
+    secure: true, //https
+    sameSite: "None", //cross-site cookie
     maxAge: 1 * 24 * 60 * 60 * 1000, //cookie expiry: set to match rT
   });
 
@@ -129,7 +129,7 @@ const refresh = (req, res) => {
           },
         },
         "sdfjhj234t2fwd0982i34rf23feoijf042SDF",
-        { expiresIn: "10s" }
+        { expiresIn: "5s" }
       );
 
       return controller.response({
