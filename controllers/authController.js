@@ -4,9 +4,9 @@ import User from "../models/User.js";
 import controller from "../routes/controller.js";
 
 const login = async (req, res) => {
-  const { username, password } = req.body;
+  const { userName, password } = req.body;
 
-  const foundUser = await User.findOne({ username }).exec();
+  const foundUser = await User.findOne({ userName }).exec();
 
   if (!foundUser || !foundUser.active) {
     return controller.response({ res, message: "Unauthorized", status: 401 });
@@ -22,7 +22,7 @@ const login = async (req, res) => {
   const accessToken = jwt.sign(
     {
       UserInfo: {
-        username: foundUser.username,
+        userName: foundUser.userName,
         roles: foundUser.roles,
       },
     },
@@ -31,7 +31,7 @@ const login = async (req, res) => {
   );
 
   const refreshToken = jwt.sign(
-    { username: foundUser.username },
+    { userName: foundUser.userName },
     "sdfjhj432t2fwd0982i43rf23feoijf024SDF",
     { expiresIn: "1d" }
   );
@@ -55,25 +55,25 @@ const login = async (req, res) => {
 };
 
 const register = async (req, res) => {
-  const { firstname, lastname, email, username, password, roles } = req.body;
-  const duplicate = await User.findOne({ username });
+  const { firstName, lastName, email, userName, password, roles } = req.body;
+  const duplicate = await User.findOne({ userName });
   if (duplicate) {
     return controller.response({
       res,
       status: 409,
-      message: "Duplicate username",
+      message: "Duplicate userName",
     });
   }
   const hashedPwd = await bcrypt.hash(password, 10);
-  const rownumber = (await User.count()) + 1;
+  const rowNumber = (await User.count()) + 1;
   const userObject =
     !Array.isArray(roles) || !roles.length
-      ? { firstname, lastname, email, username, password: hashedPwd, rownumber }
+      ? { firstName, lastName, email, userName, password: hashedPwd, rownumber }
       : {
-          firstname,
-          lastname,
+          firstName,
+          lastName,
           email,
-          username,
+          userName,
           password: hashedPwd,
           roles,
           rownumber,
@@ -85,7 +85,7 @@ const register = async (req, res) => {
     controller.response({
       res,
       status: 201,
-      message: `New user ${username} created`,
+      message: `New user ${userName} created`,
       data: user,
     });
   } else {
@@ -114,7 +114,7 @@ const refresh = (req, res) => {
 
       const foundUser = await User.findOne({ refreshToken }).exec();
 
-      if (!foundUser || foundUser.username !== decode.username)
+      if (!foundUser || foundUser.userName !== decode.userName)
         return controller.response({
           res,
           status: 403,
@@ -124,7 +124,7 @@ const refresh = (req, res) => {
       const accessToken = jwt.sign(
         {
           UserInfo: {
-            username: foundUser.username,
+            userName: foundUser.userName,
             roles: foundUser.roles,
           },
         },

@@ -2,15 +2,15 @@ import mongoose from "mongoose";
 import timestamp from "mongoose-timestamp";
 
 const userShema = new mongoose.Schema({
-  rownumber: {
+  rowNumber: {
     type: Number,
     require: true,
   },
-  firstname: {
+  firstName: {
     type: String,
     require: true,
   },
-  lastname: {
+  lastName: {
     type: String,
     require: true,
   },
@@ -19,7 +19,7 @@ const userShema = new mongoose.Schema({
     require: true,
     unique: true,
   },
-  username: {
+  userName: {
     type: String,
     require: true,
   },
