@@ -232,4 +232,28 @@ const addUser = async (req, res) => {
   }
 };
 
-export default { getDataGridUsers, addUser };
+const getUser = async (req, res) => {
+  console.log(req?.params);
+  if (req?.params?.id === undefined)
+    return controller.response({
+      res,
+      status: 400,
+      message: "Error id",
+    });
+  const id = req?.params?.id;
+  const findUser = await User.findOne({ _id: id }).select("-password").lean();
+  if (!findUser) {
+    return controller.response({
+      res,
+      status: 204,
+      message: `No User matches ID ${id}.`,
+    });
+  }
+  controller.response({
+    res,
+    status: 200,
+    data: findUser,
+  });
+};
+
+export default { getDataGridUsers, addUser, getUser };

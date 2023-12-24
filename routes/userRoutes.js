@@ -19,9 +19,17 @@ router
 router
   .route("/addUser")
   .post(
-    validator.AddUserValidator(),
+    validator.addUserValidator(),
     verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Manager),
     usersController.addUser
+  );
+
+router
+  .route("/:id")
+  .get(
+    validator.getUserValidator(),
+    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Manager),
+    usersController.getUser
   );
 
 export default router;

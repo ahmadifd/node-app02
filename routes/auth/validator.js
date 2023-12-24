@@ -22,7 +22,7 @@ const loginValidator = () => {
   ];
 };
 
-const AddUserValidator = () => {
+const addUserValidator = () => {
   return [
     check("firstName").not().isEmpty().withMessage("firstName cant be empty"),
     check("lastName").not().isEmpty().withMessage("lastName cant be empty"),
@@ -34,4 +34,12 @@ const AddUserValidator = () => {
   ];
 };
 
-export default { loginValidator, registerValidator, AddUserValidator };
+const getUserValidator = () => {
+  return [check("id").not().isEmpty().withMessage("id cant be empty")];
+};
+export default {
+  loginValidator,
+  registerValidator,
+  addUserValidator,
+  getUserValidator,
+};
