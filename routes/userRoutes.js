@@ -24,12 +24,14 @@ router
     usersController.addUser
   );
 
-router
-  .route("/:id")
-  .get(
-    validator.getUserValidator(),
-    verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Manager),
-    usersController.getUser
-  );
+router.route("/:id").get(
+  // (req, res, next) => {
+  //   console.log(req.body);
+  //   next();
+  // },
+  validator.getUserValidator(),
+  verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Manager),
+  usersController.getUser
+);
 
 export default router;
