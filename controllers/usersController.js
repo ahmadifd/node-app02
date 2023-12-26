@@ -121,7 +121,6 @@ const getDataGridUsers = async (req, res) => {
   let users;
   let usersTemp;
   let usersCountTemp;
-  let nextCursor;
   let totalCount;
   let fromIndex;
 
@@ -154,7 +153,6 @@ const getDataGridUsers = async (req, res) => {
     if (totalCount >= fromIndex + pageSize) {
       const result = await query(usersTemp, fromIndex, pageSize + 1);
       users = result.slice(0, pageSize);
-      nextCursor = result.slice(pageSize);
     } else {
       users = await query(usersTemp, fromIndex, totalCount - fromIndex);
     }
@@ -169,7 +167,6 @@ const getDataGridUsers = async (req, res) => {
         .select("-password")
         .lean();
       users = result.slice(0, pageSize);
-      nextCursor = result.slice(pageSize);
     } else {
       users = await User.find()
         .skip(fromIndex)
@@ -183,7 +180,7 @@ const getDataGridUsers = async (req, res) => {
   //   return controller.response({ res, status: 400, message: "No users found" });
   // }
 
-  controller.response({ res, data: { users, totalCount, nextCursor } });
+  controller.response({ res, data: { users, totalCount } });
 };
 
 const addUser = async (req, res) => {
