@@ -34,12 +34,39 @@ const addUserValidator = () => {
   ];
 };
 
+const editUserValidator = () => {
+  return [
+    check("id").not().isEmpty().withMessage("id cant be empty"),
+    check("firstName").not().isEmpty().withMessage("firstName cant be empty"),
+    check("lastName").not().isEmpty().withMessage("lastName cant be empty"),
+    check("email").isEmail().withMessage("email is invalid"),
+    check("userName").not().isEmpty().withMessage("username cant be empty"),
+    check("roles").not().isEmpty().withMessage("roles cant be empty"),
+    check("active").not().isEmpty().withMessage("active cant be empty"),
+  ];
+};
+
 const getUserValidator = () => {
   return [check("id").not().isEmpty().withMessage("id cant be empty")];
 };
+
+const deleteUserValidator = () => {
+  return [check("id").not().isEmpty().withMessage("id cant be empty")];
+};
+
+const changeActiveFieldForUserValidator = () => {
+  return [
+    check("id").not().isEmpty().withMessage("id cant be empty"),
+    check("active").not().isEmpty().withMessage("active cant be empty"),
+  ];
+};
+
 export default {
   loginValidator,
   registerValidator,
   addUserValidator,
   getUserValidator,
+  editUserValidator,
+  deleteUserValidator,
+  changeActiveFieldForUserValidator,
 };

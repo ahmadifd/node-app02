@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import timestamp from "mongoose-timestamp";
 
-const userShema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   rowNumber: {
     type: Number,
     require: true,
@@ -38,6 +38,6 @@ const userShema = new mongoose.Schema({
   refreshToken: String,
 });
 
-userShema.plugin(timestamp);
+userSchema.plugin(timestamp);
 
-export default mongoose.model("User", userShema);
+export default mongoose.model("User", userSchema);

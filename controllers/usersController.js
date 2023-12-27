@@ -229,6 +229,54 @@ const addUser = async (req, res) => {
   }
 };
 
+const editUser = async (req, res) => {
+  const { id, firstName, lastName, email, userName, password, roles, active } =
+    req.body;
+
+  // Does the user exist to update?
+  const user = await User.findById(id).exec();
+
+  if (!user) {
+    return controller.response({ res, status: 400, message: "User not found" });
+  }
+
+  // Check for duplicate
+  const duplicate = await User.findOne({ userName })
+    .collation({ locale: "en", strength: 2 })
+    .lean()
+    .exec();
+
+  // Allow updates to the original user
+  if (duplicate && duplicate?._id.toString() !== id) {
+    return controller.response({
+      res,
+      status: 409,
+      message: "Duplicate userName",
+    });
+  }
+
+  user.firstName = firstName;
+  user.lastName = lastName;
+  user.email = email;
+  user.userName = userName;
+  user.roles = roles;
+  user.active = active;
+
+  if (password) {
+    // Hash password
+    user.password = await bcrypt.hash(password, 10); // salt rounds
+  }
+
+  const updatedUser = await user.save();
+
+  controller.response({
+    res,
+    status: 201,
+    message: `${updatedUser.userName} updated`,
+    data: updatedUser,
+  });
+};
+
 const getUser = async (req, res) => {
   console.log(req?.params);
   if (req?.params?.id === undefined)
@@ -253,4 +301,52 @@ const getUser = async (req, res) => {
   });
 };
 
-export default { getDataGridUsers, addUser, getUser };
+const deleteUser = async (req, res) => {
+  console.log("deleteUser");
+  const { id } = req.body;
+
+  // Does the user exist to delete?
+  const user = await User.findById(id).exec();
+
+  if (!user) {
+    return controller.response({ res, status: 400, message: "User not found" });
+  }
+
+  const result = await user.deleteOne();
+
+  controller.response({
+    res,
+    status: 200,
+    message: `Username ${user.userName} deleted`,
+  });
+};
+
+const changeActiveFieldForUser = async (req, res) => {
+  const { id, active } = req.body;
+
+  // Does the user exist to update?
+  const user = await User.findById(id).exec();
+
+  if (!user) {
+    return controller.response({ res, status: 400, message: "User not found" });
+  }
+  user.active = active;
+
+  const updatedUser = await user.save();
+
+  controller.response({
+    res,
+    status: 201,
+    message: `${updatedUser.userName} updated`,
+    data: updatedUser,
+  });
+};
+
+export default {
+  getDataGridUsers,
+  addUser,
+  getUser,
+  editUser,
+  deleteUser,
+  changeActiveFieldForUser,
+};
