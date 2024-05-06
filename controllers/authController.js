@@ -27,7 +27,7 @@ const login = async (req, res) => {
       },
     },
     "sdfjhj234t2fwd0982i34rf23feoijf042SDF",
-    { expiresIn: "500s" }
+    { expiresIn: "5s" }
   );
 
   const refreshToken = jwt.sign(
