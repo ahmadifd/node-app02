@@ -12,10 +12,8 @@ const login = async (req, res) => {
     return controller.response({ res, message: "Unauthorized", status: 401 });
   }
 
-
-
   const match = await bcrypt.compare(password, foundUser.password);
-    console.log(match);
+  console.log(match);
   if (!match)
     return controller.response({ res, message: "Unauthorized", status: 401 });
 
@@ -27,7 +25,7 @@ const login = async (req, res) => {
       },
     },
     "sdfjhj234t2fwd0982i34rf23feoijf042SDF",
-    { expiresIn: "5s" }
+    { expiresIn: "500s" }
   );
 
   const refreshToken = jwt.sign(
@@ -101,7 +99,11 @@ const refresh = (req, res) => {
   const cookies = req.cookies;
 
   if (!cookies?.jwt)
-    return controller.response({ res, status: 401, message: "Unauthorized - jwt cookies does'nt exist" });
+    return controller.response({
+      res,
+      status: 401,
+      message: "Unauthorized - jwt cookies does'nt exist",
+    });
 
   const refreshToken = cookies.jwt;
 
@@ -129,7 +131,7 @@ const refresh = (req, res) => {
           },
         },
         "sdfjhj234t2fwd0982i34rf23feoijf042SDF",
-        { expiresIn: "5s" }
+        { expiresIn: "500s" }
       );
 
       return controller.response({
