@@ -3,84 +3,41 @@ import jwt from "jsonwebtoken";
 import controller from "../routes/controller.js";
 import bcrypt from "bcrypt";
 
-const queryFilter = (qFilter, filter) => {
+const queryFilter = (filter) => {
   switch (filter.filterType) {
     case "contains":
-      return qFilter.find({
-        [filter.key]: { $regex: filter.value },
-      });
-
-      break;
+      return { [filter.key]: { $regex: filter.value } };
     case "equals":
-      return qFilter.find({
-        [filter.key]: filter.value,
-      });
-      break;
+      return { [filter.key]: filter.value };
     case "startsWith":
-      return qFilter.find({
-        [filter.key]: { $regex: `^${filter.value}` },
-      });
-      break;
+      return { [filter.key]: { $regex: `^${filter.value}` } };
     case "endsWith":
-      return qFilter.find({
-        [filter.key]: { $regex: `${filter.value}$` },
-      });
-      break;
+      return { [filter.key]: { $regex: `${filter.value}$` } };
     case "isEmpty":
-      return qFilter.find({
-        [filter.key]: "",
-      });
-      break;
+      return { [filter.key]: "" };
     case "isNotEmpty":
-      return qFilter.find({
-        [filter.key]: { $exists: true, $ne: "" },
-      });
-      break;
+      return { [filter.key]: { $exists: true, $ne: "" } };
     case "isAnyOf":
-      return qFilter.find({
-        [filter.key]: filter.value,
-      });
-      break;
+      return { [filter.key]: filter.value };
     case "is":
-      return qFilter.find({
-        [filter.key]: filter.value,
-      });
-      break;
+      return { [filter.key]: filter.value };
     case "=":
-      return qFilter.find({
-        [filter.key]: filter.value,
-      });
-      break;
+      return { [filter.key]: filter.value };
     case "!=":
-      return qFilter.find({
-        [filter.key]: { $ne: filter.value },
-      });
-      break;
+      return { [filter.key]: { $ne: filter.value } };
     case ">":
-      return qFilter.find({
-        [filter.key]: { $gt: filter.value },
-      });
-      break;
+      return { [filter.key]: { $gt: filter.value } };
     case ">=":
-      return qFilter.find({
-        [filter.key]: { $gte: filter.value },
-      });
-      break;
+      return { [filter.key]: { $gte: filter.value } };
     case "<":
-      return qFilter.find({
-        [filter.key]: { $lt: filter.value },
-      });
-      break;
+      return { [filter.key]: { $lt: filter.value } };
     case "<=":
-      return qFilter.find({
-        [filter.key]: { $lte: filter.value },
-      });
-      break;
+      return { [filter.key]: { $lte: filter.value } };
   }
 };
 
-const queryQuickSearch = (qFilter, quickSearch) => {
-  return qFilter.find({
+const queryQuickSearch = (quickSearch) => {
+  const srch = {
     $or: [
       {
         firstName: { $regex: quickSearch },
@@ -95,11 +52,9 @@ const queryQuickSearch = (qFilter, quickSearch) => {
         email: { $regex: quickSearch },
       },
     ],
-  });
-};
+  };
 
-const query = (qFilter, fromIndex, pageSize) => {
-  return qFilter.skip(fromIndex).limit(pageSize).select("-password").lean();
+  return srch;
 };
 
 const getDataGridUsers = async (req, res) => {
@@ -118,69 +73,45 @@ const getDataGridUsers = async (req, res) => {
   const pageSize = req?.body?.pageSize;
 
   ////////////////////////////////////////////////////////////////////////
-  let users;
-  let usersTemp;
-  let usersCountTemp;
-  let totalCount;
-  let fromIndex;
+  let qry = {};
+  let srt = {};
+  if (filter !== undefined && filter) {
+    qry = { ...qry, ...queryFilter(filter) };
+  }
+  if (quickSearch !== undefined && quickSearch) {
+    qry = { $and: [qry, queryQuickSearch(quickSearch)] };
+  }
 
-  if (filter !== undefined || sort !== undefined || quickSearch !== undefined) {
-    usersTemp = User.find();
-    usersCountTemp = User.find();
-
-    if (filter) {
-      usersTemp = queryFilter(usersTemp, filter);
-      usersCountTemp = queryFilter(usersCountTemp, filter);
+  if (sort !== undefined && sort) {
+    if (sort.value == "asc") {
+      srt = { [sort.key]: 1 };
+    } else if (sort.value == "desc") {
+      srt = { [sort.key]: -1 };
     }
+  }
 
-    if (quickSearch) {
-      usersTemp = queryQuickSearch(usersTemp, quickSearch);
-      usersCountTemp = queryQuickSearch(usersCountTemp, quickSearch);
-    }
-
-    if (sort) {
-      if (sort.value == "asc") {
-        usersTemp = usersTemp.sort({ [sort.key]: 1 });
-        usersCountTemp = usersCountTemp.sort({ [sort.key]: 1 });
-      } else if (sort.value == "desc") {
-        usersTemp = usersTemp.sort({ [sort.key]: -1 });
-        usersCountTemp = usersCountTemp.sort({ [sort.key]: -1 });
-      }
-    }
-
-    totalCount = await usersCountTemp.count();
-    fromIndex = pageNumber * pageSize;
-    if (totalCount >= fromIndex + pageSize) {
-      const result = await query(usersTemp, fromIndex, pageSize + 1);
-      users = result.slice(0, pageSize);
-    } else {
-      users = await query(usersTemp, fromIndex, totalCount - fromIndex);
-    }
+  let users = {};
+  let totalCount = await User.count(qry);
+  let fromIndex = pageNumber * pageSize;
+  if (totalCount >= fromIndex + pageSize) {
+    users = await User.find(qry)
+      .sort(srt)
+      .skip(fromIndex)
+      .limit(pageSize + 1)
+      .select("-password")
+      .lean();
   } else {
-    totalCount = await User.count();
-    users = await User.find().select("-password").lean();
-    fromIndex = pageNumber * pageSize;
-    if (totalCount >= fromIndex + pageSize) {
-      const result = await User.find()
-        .skip(fromIndex)
-        .limit(pageSize + 1)
-        .select("-password")
-        .lean();
-      users = result.slice(0, pageSize);
-    } else {
-      users = await User.find()
-        .skip(fromIndex)
-        .limit(totalCount - fromIndex);
-    }
+    users = await User.find(qry)
+      .sort(srt)
+      .skip(fromIndex)
+      .limit(totalCount - fromIndex)
+      .select("-password")
+      .lean();
   }
 
   ////////////////////////////////////////////////////////////////////////
 
-  // if (!users?.length) {
-  //   return controller.response({ res, status: 400, message: "No users found" });
-  // }
-
-  controller.response({ res, data: { users, totalCount } });
+   controller.response({ res, data: { users, totalCount } });
 };
 
 const addUser = async (req, res) => {
