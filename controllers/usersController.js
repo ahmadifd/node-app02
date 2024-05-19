@@ -74,34 +74,7 @@ const getDataGridUsers = async (req, res) => {
 
   /////////////////////////////////////////////////////////////////////////
 
-  if (filter) {
-    let filterType = filter.filterType;
-    let filterKey = filter.key;
-    let filterValue = filter.value;
-    console.log(
-      "filterType",
-      filterType,
-      "filterKey",
-      filterKey,
-      "filterValue",
-      filterValue
-    );
-
-    const obj1 = { firstName: "Farshid" };
-    const value = "Farshid";
-    let result = await User.aggregate([
-      {
-        $match: {
-          firstName: value,
-        },
-      },
-    ]);
-    console.log(Object.keys(obj1)[0], Object.values(obj1)[0]);
-    console.log(result);
-  }
-
-  ////////////////////////////////////////////////////////////////////////
-  let qry = {};
+   let qry = {};
   let srt = {};
   if (filter !== undefined && filter) {
     qry = { ...qry, ...queryFilter(filter) };
